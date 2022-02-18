@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion de groupe{% endblock %}
+
+{% block body %}
+{% include "include/retour.html.twig" %}
+{% include "include/notif.html.twig" %}
+
+<div class="min-h-screen flex flex-col justify-center bg-gray-100">
+    <div class="px-10 w-auto p-4 shadow-2xl mx-auto rounded-2xl bg-white">
+        <div class="px-10 w-96 p-4 mx-auto">
+            <div class="text-2xl font-extrabold text-center mb-5">
+                <h1 class="">Ajouter des groupes</h1> 
+            </div>
+            <form action="{{ path('create_groupe') }}" method="POST">
+                <div class="">
+                    <label for="nom">Nom du groupe :</label><br>
+                    <input type="text" name="nom" id="nom" class="border border-blue-400 shadow-md rounded p-1.5 w-full">
+                </div>
+                <div class="mt-3">
+                    <label for="couleur">Couleur du groupe :</label><br>
+                    <input type="color" name="couleur" id="couleur" class="border border-blue-400 shadow-md rounded my-1.5 h-9  p-1" >
+                </div>
+                
+                <div class="container w-full mt-4 flex justify-end">
+                    <input type="submit" value="Ajouter" class="border border-blue-400 bg-blue-50 shadow-md rounded p-1.5 w-full px-5 hover:bg-blue-400 transition duration-200 ">
+                </div>
+            </form>
+        </div>
+
+
+        <table class="mt-5">
+            <thead class="p-2 border-b border-blue-400">
+                <tr>
+                    <th class="p-2 px-4 border-r border-blue-200">ID groupe</th>
+                    <th class="p-2 px-4 border-r border-blue-200">Nom du groupe</th>
+                    <th class="p-2 px-4 border-r border-blue-200">Couleur</th>
+                    <th class="p-2 px-4 ">Option</th>
+                </tr>
+            </thead>
+
+            <tbody class="text-center">
+                {% for unGroupe in tousLesGroupes %} 
+                    <tr class="p-2 border-b border-blue-400"> 
+                        <td class="p-2 border-r border-blue-200">{{ unGroupe.id }}</td>
+                        <td class="p-2 border-r border-blue-200">{{ unGroupe.nomGroupe }}</td>
+                        <td class="p-2 border-r border-blue-200">
+                            <input type="color" value="{{ unGroupe.couleur }}" disabled>
+                        </td>
+                        <td class="p-2 "> 
+                            <form action="{{ path('remove_groupe',{'id':unGroupe.id}) }}" method="POST">
+                                <button type="submit" class="border border-red-400 bg-red-50 shadow-md rounded p-1 w-full hover:bg-red-400 transition duration-200">supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

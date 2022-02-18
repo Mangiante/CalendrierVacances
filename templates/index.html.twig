@@ -1,0 +1,182 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajout des vacances
+{% endblock %}
+
+{% block body %}
+	{% include "include/retour.html.twig" %}
+	{% include "include/notif.html.twig" %}
+
+	<div class="min-h-screen flex flex-col justify-center bg-gray-100">
+		<div class="px-10 w-auto p-4 shadow-2xl mx-auto rounded-2xl bg-white">
+			<div class="px-10 w-96 p-4 mx-auto">
+				<div class="text-2xl font-extrabold text-center mb-5">
+					<h1 class="">Ajouter des vacances</h1>
+				</div>
+				<form action="{{ path('create_vacances') }}" method="POST">
+					<div class="">
+						<p class="border border-blue-400 shadow-md rounded p-1.5 w-full">
+							{{ app.user.nom }}
+							{{ app.user.prenom }}
+						</p>
+					</div>
+					<div class="mt-3">
+						<label for="date_debut" class="">Date de début de vacances :</label><br>
+						<input type="date" name="date_debut" class="border border-blue-400 shadow-md rounded p-1.5 w-full" id="date_debut" required>
+					</div>
+					<div class="mt-3">
+						<label for="admin">Demi journée ?</label>
+						<input type="checkbox" id="siDemiJournee" class="border border-blue-400 shadow-md rounded my-1.5 p-1" onclick="AffichageDemiJournee()">
+					</div>
+					<div class="mt-3" id="dateFin">
+						<label for="date_fin" class="">Date de fin de vacances :</label><br>
+						<input type="date" name="date_fin" id="date_fin" class="border border-blue-400 shadow-md rounded p-1.5 w-full">
+					</div>
+					<div class="mt-3" style="display: none;" id="demiJournee">
+						<label for="admin">Matin :</label>
+						<input type="radio" name="demiJournee" id="matin" value="matin" class="border border-blue-400 shadow-md rounded my-1.5 p-1 mr-5">
+						<label for="admin">Aprés-Midi :</label>
+						<input type="radio" name="demiJournee" id="aprem" value="aprem" class="border border-blue-400 shadow-md rounded my-1.5 p-1">
+					</div>
+					<div class="mt-3">
+						<label for="admin">Arrêt Maladie :</label>
+						<input type="checkbox" name="maladie" id="maladie" value="true" class="border border-blue-400 shadow-md rounded my-1.5 p-1">
+					</div>
+					<div class="mt-3">
+						<label for="admin">Congés sans soldes :</label>
+						<input type="checkbox" name="congesSansSoldes" id="congesSansSoldes" value="true" class="border border-blue-400 shadow-md rounded my-1.5 p-1">
+					</div>
+
+					{% if app.user.groupe.nomGroupe == "Cadre" %}
+						<div class="mt-3">
+							<label for="admin">RTT :</label>
+							<input type="checkbox" name="rtt" id="rtt" value="true" class="border border-blue-400 shadow-md rounded my-1.5 p-1">
+						</div>
+					{% endif %}
+					<div class="mt-3">
+						<label for="admin">Vos congés actuelle :
+							{{ app.user.nbConges }}j</label>
+					</div>
+					<div class="container w-full mt-4 flex justify-end">
+						<input type="submit" value="Ajouter" class="border border-blue-400 bg-blue-50 shadow-md rounded p-1.5 w-full px-5 hover:bg-blue-400 transition duration-200 ">
+					</div>
+				</form>
+			</div>
+			<table class="mt-5 ">
+				<thead class="p-2 border-b border-blue-400">
+					<tr>
+						<th class="p-2 px-4 border-r border-blue-200">Début</th>
+						<th class="p-2 px-4 border-r border-blue-200">Fin</th>
+						<th class="p-2 px-4 border-r border-blue-200">Date Demande</th>
+						<th class="p-2 px-4 border-r border-blue-200">Demi-journée</th>
+						<th class="p-2 px-4 border-r border-blue-200">En attente</th>
+						<th class="p-2 px-4 border-r border-blue-200">Accordé</th>
+						<th class="p-2 px-4 border-r border-blue-200">Annulé</th>
+						<th class="p-2 px-4 border-r border-blue-200">Maladie</th>
+						<th class="p-2 px-4 border-r border-blue-200">Congé sans soldes</th>
+						<th class="p-2 px-4 border-r border-blue-200">RTT</th>
+						<th class="p-2 px-4 ">Option</th>
+					</tr>
+				</thead>
+				<tbody class="text-center">
+					{% for uneVacance in toutesLesVacances  | reverse %}
+						<tr class="p-2 border-b border-blue-400">
+							<td class="p-2 border-r border-blue-200">
+								{{ uneVacance.dateDebut|date("d/m/Y") }}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{{ uneVacance.dateFin|date("d/m/Y") }}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{{ uneVacance.dateDemande|date("d/m/Y H:i") }}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{{ uneVacance.demiJournee }}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{% if uneVacance.attente == '1' %}
+									<span>Oui</span>
+								{% elseif uneVacance.attente == '0' %}
+									<span>Non</span>
+								{% endif %}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{% if uneVacance.autoriser == '1' and (uneVacance.annuler == '0' or uneVacance.annuler == null) %}
+									<span>Oui</span>
+								{% elseif uneVacance.autoriser == '0' or uneVacance.annuler == '1' %}
+									<span>Non</span>
+								{% endif %}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{% if uneVacance.annuler == '1' %}
+									<span>Oui le
+										{{ uneVacance.dateAnnulation|date("d/m/Y H:i") }}</span>
+								{% elseif uneVacance.annuler == '0'%}
+									<span>En attente</span>
+								{% elseif uneVacance.annuler == null %}
+									<span>Non</span>
+								{% endif %}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{% if uneVacance.maladie == '1' %}
+									<span>Oui</span>
+								{% elseif uneVacance.maladie == '0' or uneVacance.maladie == null %}
+									<span>Non</span>
+								{% endif %}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{% if uneVacance.sansSoldes == '1' %}
+									<span>Oui</span>
+								{% elseif uneVacance.sansSoldes == '0' or uneVacance.sansSoldes == null %}
+									<span>Non</span>
+								{% endif %}
+							</td>
+							<td class="p-2 border-r border-blue-200">
+								{% if uneVacance.rtt == '1' %}
+									<span>Oui</span>
+								{% elseif uneVacance.rtt == '0' or uneVacance.rtt == null %}
+									<span>Non</span>
+								{% endif %}
+							</td>
+							{% if (uneVacance.DateDebut > jourActuel) and uneVacance.annuler != "0"%}
+								<td class="p-2">
+									<form action="{{ path('remove_vacance',{'id':uneVacance.id}) }}" method="POST">
+										<button type="submit" class="border border-red-400 bg-red-50 shadow-md rounded p-1 w-full hover:bg-red-400 transition duration-200 ">supprimer</button>
+									</form>
+								</td>
+								<td class="p-2 ">
+									<form action="{{ path('modif_vacance',{'id':uneVacance.id}) }}" method="POST">
+										<button type="submit" class="border border-green-400 bg-green-50 shadow-md rounded p-1 w-full hover:bg-green-400 transition duration-200">Modifier</button>
+									</form>
+								</td>
+							{% endif %}
+							{% if (uneVacance.autoriser == "1" and uneVacance.annuler is null) %}
+								<td class="p-2 ">
+									<form action="{{ path('demande_annulation',{'id':uneVacance.id}) }}" method="POST">
+										<button type="submit" class="border border-yellow-400 bg-yellow-50 shadow-md rounded p-1 w-full hover:bg-yellow-400 transition duration-200">Annuler</button>
+									</form>
+								</td>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				</tbody>
+			</tbody>
+		</table>
+	</div>
+</div>
+<script>
+	function AffichageDemiJournee() {
+var boutonIF = document.getElementById("siDemiJournee");
+var bouton = document.getElementById("demiJournee");
+var dateFin = document.getElementById("dateFin");
+
+if (boutonIF.checked == true) {
+bouton.style.display = 'block';
+dateFin.style.display = 'none';
+} else {
+bouton.style.display = 'none';
+dateFin.style.display = 'block';
+}
+return true;
+}
+</script>{% endblock %}

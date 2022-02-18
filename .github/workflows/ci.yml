@@ -1,0 +1,78 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Pipeline-CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ master ]
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  ci:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+      - name: Setup PHP Action
+        uses: shivammathur/setup-php@2.17.0
+        with:
+          # Setup PHP version.
+          php-version: 8.1
+          # Setup PHP extensions.
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, json
+      # Runs a single command using the runners shell
+      - uses: getong/mariadb-action@v1.1
+        with:
+          host port: 3306 # Optional, default value is 3306. The port of host
+          container port: 3306 # Optional, default value is 3306. The port of container
+          character set server: 'utf8' # Optional, default value is 'utf8mb4'. The '--character-set-server' option for mysqld
+          collation server: 'utf8_general_ci' # Optional, default value is 'utf8mb4_general_ci'. The '--collation-server' option for mysqld
+          mariadb version: '10.4.10' # Optional, default value is "latest". The version of the MariaDB
+          mysql database: 'CalendrierVacanceTest' # Optional, default value is "test". The specified database which will be create
+          mysql root password: root # Required if "mysql user" is empty, default is empty. The root superuser password
+    
+      - name: Cache multiple paths
+        uses: actions/cache@v2.1.7
+        with:
+          # A list of files, directories, and wildcard patterns to cache and restore
+          path: |
+            vendor 
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        
+      - name: Composer install
+        run: composer install --no-interaction --no-progress
+
+      - name: Symfony CLI
+        run: |
+            echo 'deb [trusted=yes] https://repo.symfony.com/apt/ /' | sudo tee /etc/apt/sources.list.d/symfony-cli.list
+            sudo apt update
+            sudo apt install symfony-cli 
+      - name: Symfony check vulnerabilities
+        run: symfony check:security
+      
+      - name: PHP-CS-FIXER
+        run: |
+            composer require friendsofphp/php-cs-fixer
+            ./vendor/bin/php-cs-fixer fix --dry-run
+
+      - name: Lint YAML files
+        run: symfony console lint:yaml config --parse-tags
+
+      - name: Lint Twig templates
+        run: symfony console lint:twig templates --env=prod
+
+      - name: Lint Parameters and Services
+        run: symfony console lint:container --no-debug
+
+      - name: Lint Doctrine entities
+        run: symfony console doctrine:schema:validate --skip-sync -vvv --no-interaction
+
+      - name: PHP Unit
+        run: php bin/phpunit

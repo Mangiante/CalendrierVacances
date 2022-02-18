@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier une vacance{% endblock %}
+
+{% block body %}
+{% include "include/retour.html.twig" %}
+{% include "include/notif.html.twig" %}
+
+<div class="min-h-screen flex flex-col justify-center bg-gray-100">
+    <div class="px-10 w-96 p-4 shadow-2xl mx-auto rounded-2xl bg-white">
+        <div class="text-2xl m-3 font-extrabold text-center">
+                <h1 class="">Modifier une vacance</h1>
+        </div>
+        <div class="mt-5">
+            <form action="{{ path('modifier_vacance', {'id':vacanceID.id}) }}" method="POST">
+                <div class="container mb-4">
+                    <label for="date_debut">Nouvelle date de début de vacances :</label> <br>
+                    <input type="date" name="date_debut" id="date_debut" class="border border-blue-400 shadow-md rounded mt-1 w-full p-1.5" value="{{ vacanceID.dateDebut|date('Y-m-d') }}" required>
+                </div>
+                <div class="">
+                    <label for="date_fin" class="" >Nouvelle date de fin de vacances :</label>
+                    <input type="date" name="date_fin" id="date_fin" class="border border-blue-400 shadow-md rounded mt-1 w-full p-1.5" value="{{ vacanceID.dateFin|date('Y-m-d') }}" required>
+                </div>
+
+                <div class="container w-full mt-9 mb-5 flex justify-end">
+                    <input type="submit" value="Modifier" class="border border-blue-400 bg-blue-50 shadow-md rounded p-1.5 px-6 hover:bg-blue-400 transition duration-200">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
